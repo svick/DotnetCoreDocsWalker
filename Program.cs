@@ -16,25 +16,7 @@ namespace DotnetCoreDocsWalker
     {
         static void Main()
         {
-            WalkSite("https://www.microsoft.com/net");
-            WalkSite("https://docs.microsoft.com/en-us/dotnet/");
             WalkSite("https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/", initialUrl: "visual-fsharp");
-
-            WalkRepo("Microsoft", "dotnet", "master");
-
-            var orgs = new[] { "dotnet", "aspnet" };
-
-            var client = new GitHubClient(new ProductHeaderValue("Svick.DotnetCoreDocsWalker"));
-
-            var repos = from org in orgs
-                        from repo in client.Repository.GetAllForOrg(org).Result
-                        select new { org, repo = repo.Name, branch = repo.DefaultBranch };
-
-            foreach (var repo in repos)
-            {
-                Console.WriteLine(repo);
-                WalkRepo(repo.org, repo.repo, repo.branch);
-            }
 
             Console.ReadLine();
         }
