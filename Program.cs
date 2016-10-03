@@ -55,40 +55,22 @@ namespace DotnetCoreDocsWalker
                     lastNull = false;
                 }
 
+                if (!url.AbsoluteUri.StartsWith(baseUrl))
+                {
+                    return new Uri[0];
+                }
+
                 Debug.WriteLine($"Starting {url}.");
 
                 string pageSource;
                 using (var httpClient = new HttpClient())
                 {
-                    Func<string, Task> writeError = async cause =>
-                    {
-                        using (await l.LockAsync())
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-
-                            Console.WriteLine($"{url}: {cause}");
-
-                            var sourceUrls = processedUrls[url];
-                            var count = 5;
-                            foreach (var sourceUrl in sourceUrls.Take(count))
-                            {
-                                Console.WriteLine($"  {sourceUrl}");
-                            }
-
-                            if (sourceUrls.Count > count)
-                                Console.WriteLine("...");
-
-                            Console.ResetColor();
-                        }
-                    };
-
                     try
                     {
                         using (var response = await httpClient.GetAsync(url, ResponseHeadersRead))
                         {
                             if (!response.IsSuccessStatusCode)
                             {
-                                await writeError(response.StatusCode.ToString());
                                 return new Uri[0];
                             }
 
@@ -102,9 +84,8 @@ namespace DotnetCoreDocsWalker
                             pageSource = await response.Content.ReadAsStringAsync();
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        await writeError(e.Message);
                         return new Uri[0];
                     }
                 }
@@ -114,6 +95,12 @@ namespace DotnetCoreDocsWalker
                 var document = new HtmlDocument();
                 document.LoadHtml(pageSource);
 
+                var linkInCode = document.DocumentNode.Descendants("code")
+                    .FirstOrDefault(e => e.InnerHtml.Contains("http://") || e.InnerHtml.Contains("https://"));
+
+                if (linkInCode != null)
+                    Console.WriteLine($"{url}: {linkInCode.OuterHtml}");
+
                 using (await l.LockAsync())
                 {
                     var links = document.DocumentNode.Descendants("a")
@@ -121,23 +108,8 @@ namespace DotnetCoreDocsWalker
                         .Where(href => href != null)
                         .Select(href =>
                         {
-                            Func<ConsoleColor, Action<string>> writeColor = color => cause =>
-                            {
-                                Console.ForegroundColor = color;
-
-                                Console.WriteLine($"{href}: {cause}");
-                                Console.WriteLine($"    {url}");
-
-                                Console.ResetColor();
-                            };
-
-                            Action<string> writeError = writeColor(ConsoleColor.Red);
-                            Action<string> writeWarning = writeColor(ConsoleColor.Yellow);
-
                             if (href.StartsWith("mailto:"))
                             {
-                                writeWarning("Email address");
-
                                 return null;
                             }
 
@@ -145,10 +117,8 @@ namespace DotnetCoreDocsWalker
                             {
                                 return new Uri(new Uri(url, href).GetLeftPart(UriPartial.Query));
                             }
-                            catch (Exception e)
+                            catch (Exception)
                             {
-                                writeError($"{e.GetType().Name}: {e.Message}");
-
                                 return null;
                             }
                         })
