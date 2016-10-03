@@ -19,7 +19,7 @@ namespace DotnetCoreDocsWalker
             WalkSite("https://www.microsoft.com/net");
             WalkSite("https://docs.microsoft.com/en-us/dotnet/");
 
-            WalkSite("Microsoft", "dotnet", "master");
+            WalkRepo("Microsoft", "dotnet", "master");
 
             var orgs = new[] { "dotnet", "aspnet" };
 
@@ -32,18 +32,18 @@ namespace DotnetCoreDocsWalker
             foreach (var repo in repos)
             {
                 Console.WriteLine(repo);
-                WalkSite(repo.org, repo.repo, repo.branch);
+                WalkRepo(repo.org, repo.repo, repo.branch);
             }
 
             Console.ReadLine();
         }
 
-        static void WalkSite(string org, string repo, string branch)
+        static void WalkRepo(string org, string repo, string branch)
         {
             WalkSite($"https://github.com/{org}/{repo}/tree/{branch}/", $"https://github.com/{org}/{repo}/tree/");
         }
 
-        static void WalkSite(string baseUrl, string ignoredUrl = null)
+        static void WalkSite(string baseUrl, string ignoredUrl = null, string initialUrl = null)
         {
             Debug.Listeners.Add(new ConsoleTraceListener());
 
@@ -198,7 +198,7 @@ namespace DotnetCoreDocsWalker
 
             downloadBlock.LinkTo(downloadBlock);
 
-            downloadBlock.Post(new Uri(baseUrl));
+            downloadBlock.Post(new Uri(initialUrl ?? baseUrl));
             downloadBlock.Post(null);
             downloadBlock.Completion.Wait();
 
