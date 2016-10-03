@@ -18,6 +18,7 @@ namespace DotnetCoreDocsWalker
         {
             WalkSite("https://www.microsoft.com/net");
             WalkSite("https://docs.microsoft.com/en-us/dotnet/");
+            WalkSite("https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/", initialUrl: "visual-fsharp");
 
             WalkRepo("Microsoft", "dotnet", "master");
 
@@ -198,7 +199,11 @@ namespace DotnetCoreDocsWalker
 
             downloadBlock.LinkTo(downloadBlock);
 
-            downloadBlock.Post(new Uri(initialUrl ?? baseUrl));
+            var initial = new Uri(baseUrl);
+            if (initialUrl != null)
+                initial = new Uri(initial, initialUrl);
+
+            downloadBlock.Post(initial);
             downloadBlock.Post(null);
             downloadBlock.Completion.Wait();
 
