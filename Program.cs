@@ -18,8 +18,6 @@ namespace DotnetCoreDocsWalker
         {
             WalkSite("https://www.microsoft.com/net");
             WalkSite("https://docs.microsoft.com/en-us/dotnet/");
-            //Console.ReadLine();
-            //return;
 
             WalkSite("Microsoft", "dotnet", "master");
 
@@ -30,8 +28,6 @@ namespace DotnetCoreDocsWalker
             var repos = from org in orgs
                         from repo in client.Repository.GetAllForOrg(org).Result
                         select new { org, repo = repo.Name, branch = repo.DefaultBranch };
-
-            //repos = repos.SkipWhile(x => x.repo != "core-docs");
 
             foreach (var repo in repos)
             {
@@ -52,11 +48,8 @@ namespace DotnetCoreDocsWalker
             Debug.Listeners.Add(new ConsoleTraceListener());
 
             bool lastNull = false;
-            //bool firstNull = true;
             var processedUrls = new MultiValueDictionary<Uri, Uri>();
             var l = new AsyncLock();
-
-            //AsyncAutoResetEvent doneEvent = new AsyncAutoResetEvent();
 
             TransformManyBlock<Uri, Uri> downloadBlock = null;
             downloadBlock = new TransformManyBlock<Uri, Uri>(async url =>
@@ -67,16 +60,12 @@ namespace DotnetCoreDocsWalker
                     {
                         Console.WriteLine($"Token, queue length {downloadBlock.InputCount} ({baseUrl}).");
 
-                        //if (!firstNull)
-                        //    doneEvent.Set();
-
                         if (lastNull)
                         {
                             downloadBlock.Complete();
                             return new Uri[0];
                         }
                         lastNull = true;
-                        //firstNull = false;
                         return new Uri[] { null };
                     }
 
@@ -147,7 +136,6 @@ namespace DotnetCoreDocsWalker
                     var links = document.DocumentNode.Descendants("a")
                         .Select(a => HtmlEntity.DeEntitize(a.Attributes["href"]?.Value))
                         .Where(href => href != null)
-                        //.Select(Uri.UnescapeDataString)
                         .Select(href =>
                         {
                             Func<ConsoleColor, Action<string>> writeColor = color => cause =>
@@ -213,7 +201,6 @@ namespace DotnetCoreDocsWalker
             downloadBlock.Post(new Uri(baseUrl));
             downloadBlock.Post(null);
             downloadBlock.Completion.Wait();
-            //doneEvent.Wait();
 
             Debug.WriteLine($"Done walking {baseUrl}.");
         }
