@@ -178,12 +178,7 @@ namespace DotnetCoreDocsWalker
                             if (new[] { "javascript" }.Contains(linkUrl.Scheme))
                                 return false;
 
-                            //if (linkUrl.AbsoluteUri.StartsWith(
-                            //    "https://github.com/dotnet/core-docs/new/master/apispec/new"))
-                            //    return false;
-
-                            if (ignoredUrl != null && linkUrl.AbsoluteUri.StartsWith(ignoredUrl) &&
-                                !linkUrl.AbsoluteUri.StartsWith(baseUrl))
+                            if (ignoredUrl != null && linkUrl.AbsoluteUri.StartsWith(ignoredUrl))
                                 return false;
 
                             bool first = !processedUrls.ContainsKey(linkUrl);
