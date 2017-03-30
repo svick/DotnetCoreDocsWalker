@@ -20,7 +20,7 @@ namespace DotnetCoreDocsWalker
             WalkSite("https://docs.microsoft.com/en-us/dotnet/");
             WalkSite("https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/", initialUrl: "visual-fsharp");
 
-            WalkRepo("Microsoft", "dotnet", "master");
+            WalkRepo("Microsoft", "dotnet");
 
             var orgs = new[] { "dotnet", "aspnet" };
 
@@ -39,7 +39,7 @@ namespace DotnetCoreDocsWalker
             Console.ReadLine();
         }
 
-        static void WalkRepo(string org, string repo, string branch)
+        static void WalkRepo(string org, string repo, string branch = "master")
         {
             WalkSite($"https://github.com/{org}/{repo}/tree/{branch}/", $"https://github.com/{org}/{repo}/tree/");
         }
